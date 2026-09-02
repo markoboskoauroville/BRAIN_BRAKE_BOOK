@@ -195,8 +195,8 @@ p{margin:0 0 20px}
     <button class=pb id=pb>&#9654;</button>
     <div class=pmeta>
       <div class=pt id=pt>Audiobook</div>
-      <div class=ptime><span id=el>0:00</span> &nbsp;·&nbsp; <span id=rem>-0:00</span> left in this
-        chapter &nbsp;·&nbsp; <span id=tot>-0:00</span> left in the book</div>
+      <div class=ptime><span id=el>0:00</span> &nbsp;·&nbsp; <span id=rem>-0:00</span> left
+        &nbsp;·&nbsp; <span id=tot>0:00</span> total</div>
       <div class=bar id=bar><i id=fill></i></div>
     </div>
   </div>
@@ -216,7 +216,8 @@ function save(){
     const el = document.getElementById(c.id);
     if (el && el.getBoundingClientRect().top < window.innerHeight*0.5) seen = c.id;
   }
-  localStorage.setItem(KEY, JSON.stringify({y:window.scrollY, ch:seen, at:Date.now()}));
+  localStorage.setItem(KEY, JSON.stringify({y:window.scrollY, ch:seen,
+    seg:(SEG.i||0), at:Date.now()}));
 }
 let t=null;
 addEventListener('scroll', ()=>{ clearTimeout(t); t=setTimeout(save,300); }, {passive:true});
@@ -234,47 +235,91 @@ if (saved && saved.y > 600){
   setTimeout(()=>{ resume.style.display='none'; }, 12000);
 }
 
-/* ---- the audiobook ------------------------------------------------------ */
-const a = new Audio();
-let idx = 0, durs = CH.map(()=>0);
+/* ---- the audiobook ------------------------------------------------------
+   The book is cut into paragraphs, one file each, and THE READER NEVER FINDS
+   THIS OUT. Two elements alternate: while one plays, the next is already
+   loaded on the other, so the join is a swap and not a fetch. All timing is
+   reported against the WHOLE BOOK, because the paragraph a listener happens
+   to be inside is not a fact about their afternoon; the twelve minutes left
+   is. Segmenting buys a lot and it should cost nothing. */
+const SEG = {list:[], i:0, before:[], total:0, playing:false};
+const A = [new Audio(), new Audio()];
+A.forEach(a=>{ a.preload='auto'; });
+let cur = 0;
+
 const pb=document.getElementById('pb'), pt=document.getElementById('pt');
 const el=document.getElementById('el'), rem=document.getElementById('rem');
 const tot=document.getElementById('tot'), fill=document.getElementById('fill');
 const bar=document.getElementById('bar');
 
-const mmss = s => (s<0?'-':'') + Math.floor(Math.abs(s)/60) + ':' +
+const mmss = s => Math.floor(Math.abs(s)/60) + ':' +
   String(Math.floor(Math.abs(s)%%60)).padStart(2,'0');
 
-function load(i, play){
-  idx = i;
-  a.src = 'audio/' + CH[i].id + '.mp3';
-  pt.textContent = (i+1) + '. ' + CH[i].title;
-  if (play) a.play().catch(()=>{});
+function chapterOf(i){
+  const id = SEG.list[i] ? SEG.list[i].ch : '';
+  const c = CH.find(x=>x.id===id);
+  return c ? c.title : 'Audiobook';
+}
+function elapsed(){
+  const a = A[cur];
+  return (SEG.before[SEG.i]||0) + (a.currentTime||0);
 }
 function tick(){
-  const d = a.duration || durs[idx] || 0;
-  const c = a.currentTime || 0;
-  el.textContent = mmss(c);
-  rem.textContent = '-' + mmss(Math.max(0, d - c));
-  let after = 0;
-  for (let i=idx+1;i<CH.length;i++) after += durs[i]||0;
-  tot.textContent = '-' + mmss(Math.max(0, d - c) + after);
-  fill.style.width = d ? (100*c/d)+'%%' : '0%%';
+  const e = elapsed(), T = SEG.total;
+  el.textContent = mmss(e);
+  rem.textContent = '-' + mmss(Math.max(0, T - e));
+  tot.textContent = mmss(T);
+  fill.style.width = T ? (100*e/T)+'%%' : '0%%';
+  pt.textContent = chapterOf(SEG.i);
 }
-a.addEventListener('timeupdate', tick);
-a.addEventListener('loadedmetadata', ()=>{ durs[idx]=a.duration; tick(); });
-a.addEventListener('ended', ()=>{ if (idx+1<CH.length) load(idx+1,true); });
-pb.onclick = ()=>{ if(a.paused){ a.play().catch(()=>{}); pb.innerHTML='&#10073;&#10073;'; }
-                   else { a.pause(); pb.innerHTML='&#9654;'; } };
-bar.onclick = e=>{ const r=bar.getBoundingClientRect();
-                   if (a.duration) a.currentTime = a.duration*((e.clientX-r.left)/r.width); };
-load(0,false); tick();
+function src(i){ return 'audio/' + SEG.list[i].f; }
+function prime(){
+  const n = SEG.i + 1;
+  if (n < SEG.list.length) A[1-cur].src = src(n);   /* fetched during playback */
+}
+function go(i, play){
+  if (i >= SEG.list.length){ SEG.playing=false; pb.innerHTML='&#9654;'; return; }
+  SEG.i = i;
+  const a = A[cur];
+  if (!a.src.endsWith(SEG.list[i].f)) a.src = src(i);
+  if (play) a.play().catch(()=>{});
+  prime(); tick(); save();
+}
+A.forEach(a=>{
+  a.addEventListener('timeupdate', ()=>{ if (a===A[cur]) tick(); });
+  a.addEventListener('ended', ()=>{
+    if (a!==A[cur]) return;
+    cur = 1-cur;                       /* the next file is already loaded */
+    go(SEG.i+1, SEG.playing);
+  });
+});
+pb.onclick = ()=>{
+  if (!SEG.list.length) return;
+  if (A[cur].paused){ SEG.playing=true; A[cur].play().catch(()=>{});
+                      pb.innerHTML='&#10073;&#10073;'; }
+  else { SEG.playing=false; A[cur].pause(); pb.innerHTML='&#9654;'; }
+};
+/* the bar is the WHOLE BOOK, so a drag lands in the right paragraph and the
+   right offset inside it. The listener is scrubbing a book, not a file. */
+bar.onclick = e=>{
+  if (!SEG.total) return;
+  const r = bar.getBoundingClientRect();
+  const want = SEG.total * ((e.clientX - r.left) / r.width);
+  let i = 0;
+  while (i+1 < SEG.list.length && SEG.before[i+1] <= want) i++;
+  A[cur].src = src(i); SEG.i = i;
+  A[cur].currentTime = Math.max(0, want - SEG.before[i]);
+  if (SEG.playing) A[cur].play().catch(()=>{});
+  prime(); tick();
+};
 
-/* durations for the whole book, so "left in the book" is true before you have
-   played anything. Written by the generator; falls back to per file metadata. */
-fetch('audio/durations.json').then(r=>r.ok?r.json():null).then(d=>{
-  if(!d) return; CH.forEach((c,i)=>{ if(d[c.id]) durs[i]=d[c.id]; }); tick();
-}).catch(()=>{});
+fetch('audio/durations.json').then(r=>r.json()).then(d=>{
+  SEG.list = d.segments; SEG.total = d.total;
+  let run = 0;
+  SEG.before = SEG.list.map(s=>{ const b = run; run += s.sec; return b; });
+  const start = (saved && saved.seg && saved.seg < SEG.list.length) ? saved.seg : 0;
+  go(start, false);
+}).catch(()=>{ pt.textContent = 'Audiobook not available'; });
 </script>
 </body></html>""" % {
     'title': title, 'subtitle': subtitle,

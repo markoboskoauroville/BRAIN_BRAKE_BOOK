@@ -1,0 +1,421 @@
+{
+ "segments": [
+  {
+   "f": "0000.mp3",
+   "ch": "chapter-one-the-mystery",
+   "sec": 4.25
+  },
+  {
+   "f": "0001.mp3",
+   "ch": "chapter-one-the-mystery",
+   "sec": 24.24
+  },
+  {
+   "f": "0002.mp3",
+   "ch": "chapter-one-the-mystery",
+   "sec": 16.27
+  },
+  {
+   "f": "0003.mp3",
+   "ch": "chapter-one-the-mystery",
+   "sec": 1.13
+  },
+  {
+   "f": "0004.mp3",
+   "ch": "chapter-one-the-mystery",
+   "sec": 10.85
+  },
+  {
+   "f": "0005.mp3",
+   "ch": "chapter-two-the-old-theory",
+   "sec": 4.75
+  },
+  {
+   "f": "0006.mp3",
+   "ch": "chapter-two-the-old-theory",
+   "sec": 21.77
+  },
+  {
+   "f": "0007.mp3",
+   "ch": "chapter-two-the-old-theory",
+   "sec": 9.36
+  },
+  {
+   "f": "0008.mp3",
+   "ch": "chapter-two-the-old-theory",
+   "sec": 2.76
+  },
+  {
+   "f": "0009.mp3",
+   "ch": "chapter-two-the-old-theory",
+   "sec": 10.18
+  },
+  {
+   "f": "0010.mp3",
+   "ch": "chapter-three-the-full-tank",
+   "sec": 3.82
+  },
+  {
+   "f": "0011.mp3",
+   "ch": "chapter-three-the-full-tank",
+   "sec": 18.24
+  },
+  {
+   "f": "0012.mp3",
+   "ch": "chapter-three-the-full-tank",
+   "sec": 6.46
+  },
+  {
+   "f": "0013.mp3",
+   "ch": "chapter-three-the-full-tank",
+   "sec": 2.62
+  },
+  {
+   "f": "0014.mp3",
+   "ch": "chapter-four-the-gatekeeper",
+   "sec": 9.36
+  },
+  {
+   "f": "0015.mp3",
+   "ch": "chapter-four-the-gatekeeper",
+   "sec": 28.85
+  },
+  {
+   "f": "0016.mp3",
+   "ch": "chapter-four-the-gatekeeper",
+   "sec": 11.54
+  },
+  {
+   "f": "0017.mp3",
+   "ch": "chapter-four-the-gatekeeper",
+   "sec": 4.7
+  },
+  {
+   "f": "0018.mp3",
+   "ch": "chapter-five-the-experiment",
+   "sec": 4.87
+  },
+  {
+   "f": "0019.mp3",
+   "ch": "chapter-five-the-experiment",
+   "sec": 1.8
+  },
+  {
+   "f": "0020.mp3",
+   "ch": "chapter-five-the-experiment",
+   "sec": 13.97
+  },
+  {
+   "f": "0021.mp3",
+   "ch": "chapter-five-the-experiment",
+   "sec": 12.36
+  },
+  {
+   "f": "0022.mp3",
+   "ch": "chapter-five-the-experiment",
+   "sec": 12.86
+  },
+  {
+   "f": "0023.mp3",
+   "ch": "chapter-five-the-experiment",
+   "sec": 4.92
+  },
+  {
+   "f": "0024.mp3",
+   "ch": "chapter-six-the-release",
+   "sec": 4.03
+  },
+  {
+   "f": "0025.mp3",
+   "ch": "chapter-six-the-release",
+   "sec": 17.74
+  },
+  {
+   "f": "0026.mp3",
+   "ch": "chapter-six-the-release",
+   "sec": 7.1
+  },
+  {
+   "f": "0027.mp3",
+   "ch": "chapter-six-the-release",
+   "sec": 8.26
+  },
+  {
+   "f": "0028.mp3",
+   "ch": "chapter-six-the-release",
+   "sec": 1.03
+  },
+  {
+   "f": "0029.mp3",
+   "ch": "chapter-seven-what-happens-next-is-not-a-dream",
+   "sec": 6.38
+  },
+  {
+   "f": "0030.mp3",
+   "ch": "chapter-seven-what-happens-next-is-not-a-dream",
+   "sec": 18.74
+  },
+  {
+   "f": "0031.mp3",
+   "ch": "chapter-seven-what-happens-next-is-not-a-dream",
+   "sec": 7.66
+  },
+  {
+   "f": "0032.mp3",
+   "ch": "chapter-eight-the-invitation",
+   "sec": 8.09
+  },
+  {
+   "f": "0033.mp3",
+   "ch": "chapter-eight-the-invitation",
+   "sec": 3.02
+  },
+  {
+   "f": "0034.mp3",
+   "ch": "chapter-eight-the-invitation",
+   "sec": 17.33
+  },
+  {
+   "f": "0035.mp3",
+   "ch": "chapter-eight-the-invitation",
+   "sec": 9.74
+  },
+  {
+   "f": "0036.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 6.55
+  },
+  {
+   "f": "0037.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 26.57
+  },
+  {
+   "f": "0038.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 16.37
+  },
+  {
+   "f": "0039.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 10.46
+  },
+  {
+   "f": "0040.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 4.1
+  },
+  {
+   "f": "0041.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 2.54
+  },
+  {
+   "f": "0042.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 23.09
+  },
+  {
+   "f": "0043.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 2.83
+  },
+  {
+   "f": "0044.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 30.84
+  },
+  {
+   "f": "0045.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 1.73
+  },
+  {
+   "f": "0046.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 27.24
+  },
+  {
+   "f": "0047.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 24.72
+  },
+  {
+   "f": "0048.mp3",
+   "ch": "chapter-nine-the-passage",
+   "sec": 4.37
+  },
+  {
+   "f": "0049.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 3.98
+  },
+  {
+   "f": "0050.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 2.93
+  },
+  {
+   "f": "0051.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 24.0
+  },
+  {
+   "f": "0052.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 8.3
+  },
+  {
+   "f": "0053.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 21.58
+  },
+  {
+   "f": "0054.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 2.76
+  },
+  {
+   "f": "0055.mp3",
+   "ch": "chapter-ten-the-house",
+   "sec": 9.55
+  },
+  {
+   "f": "0056.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 4.85
+  },
+  {
+   "f": "0057.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 16.82
+  },
+  {
+   "f": "0058.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 9.58
+  },
+  {
+   "f": "0059.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 26.81
+  },
+  {
+   "f": "0060.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 7.73
+  },
+  {
+   "f": "0061.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 24.12
+  },
+  {
+   "f": "0062.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 3.22
+  },
+  {
+   "f": "0063.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 22.3
+  },
+  {
+   "f": "0064.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 1.78
+  },
+  {
+   "f": "0065.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 8.35
+  },
+  {
+   "f": "0066.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 5.35
+  },
+  {
+   "f": "0067.mp3",
+   "ch": "chapter-eleven-the-doors",
+   "sec": 10.18
+  },
+  {
+   "f": "0068.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 1.27
+  },
+  {
+   "f": "0069.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 19.9
+  },
+  {
+   "f": "0070.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 12.05
+  },
+  {
+   "f": "0071.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 1.46
+  },
+  {
+   "f": "0072.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 13.7
+  },
+  {
+   "f": "0073.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 18.65
+  },
+  {
+   "f": "0074.mp3",
+   "ch": "chapter-twelve-the-key-door",
+   "sec": 8.04
+  },
+  {
+   "f": "0075.mp3",
+   "ch": "the-last-page",
+   "sec": 4.85
+  },
+  {
+   "f": "0076.mp3",
+   "ch": "the-last-page",
+   "sec": 25.82
+  },
+  {
+   "f": "0077.mp3",
+   "ch": "the-last-page",
+   "sec": 3.65
+  },
+  {
+   "f": "0078.mp3",
+   "ch": "the-last-page",
+   "sec": 27.12
+  },
+  {
+   "f": "0079.mp3",
+   "ch": "the-last-page",
+   "sec": 12.05
+  },
+  {
+   "f": "0080.mp3",
+   "ch": "the-last-page",
+   "sec": 8.88
+  },
+  {
+   "f": "0081.mp3",
+   "ch": "the-last-page",
+   "sec": 16.27
+  },
+  {
+   "f": "0082.mp3",
+   "ch": "the-last-page",
+   "sec": 2.76
+  }
+ ],
+ "total": 923.12,
+ "measured": "ffprobe"
+}
