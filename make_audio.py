@@ -28,7 +28,7 @@ including the trap recorded there: simba-3.2 answers HTTP 400 for any voice whos
 id does not end in _32, so the model belongs to the seat and is never hardcoded.
 Beatrice on simba-3.2, per Baba.
 """
-import os, re, json, hashlib, base64, urllib.request, urllib.error, threading, queue, time
+import os, re, json, hashlib, subprocess, base64, urllib.request, urllib.error, threading, queue, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'audio')
@@ -43,6 +43,17 @@ TRIES = 6
 def keys():
     src = '/mnt/user-data/uploads/speechify_api.txt'
     return [l.strip() for l in open(src) if re.fullmatch(r'sk[A-Za-z0-9_\-]{20,}', l.strip())]
+
+
+def _probe(path):
+    """How long this file actually is, measured, in seconds."""
+    out = subprocess.run(['ffprobe', '-v', 'error', '-show_entries',
+                          'format=duration', '-of', 'csv=p=0', path],
+                         capture_output=True, text=True).stdout.strip()
+    try:
+        return float(out)
+    except ValueError:
+        return 0.0
 
 
 def key_of(text):
@@ -204,8 +215,18 @@ for ch, i, text in segs:
     f = os.path.join(OUT, key_of(text) + '.mp3')
     if not os.path.exists(f):
         continue
-    order.append({'f': key_of(text) + '.mp3', 'ch': ch,
-                  'sec': done.get(i, {}).get('sec', 0.0)})
+    # and the DURATION comes from the file too, not from this run's results,
+    # which are empty for anything that was already voiced. Asking the audio is
+    # the only answer that is true whether or not this run made it.
+    sec = done.get(i, {}).get('sec') or _probe(f)
+    # the TEXT and the WORD MARKS belong in the manifest too. The page needs the
+    # text to wrap each word and the marks to know when to light it, and both
+    # come from disk for the same reason the duration does: they are true
+    # whether or not this run made the file.
+    mk = os.path.join(OUT, key_of(text) + '.json')
+    marks = json.load(open(mk)) if os.path.exists(mk) else []
+    order.append({'f': key_of(text) + '.mp3', 'ch': ch, 'sec': round(sec, 2),
+                  'text': text, 'marks': marks})
 json.dump({'segments': order,
            'total': round(sum(o['sec'] for o in order), 2)},
           open(os.path.join(OUT, 'durations.json'), 'w'), indent=1)
