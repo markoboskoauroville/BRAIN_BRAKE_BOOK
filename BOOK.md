@@ -170,41 +170,49 @@ He closed his eyes. The dark did not come.
 
 What came instead was a turning.
 
-In front of him, or perhaps around him, a throat had opened in the air, pale as
-paper and wide as a room. It did not go straight back like a corridor. It narrowed
-the way water narrows when it leaves a basin, curving in on itself, drawing its own
-walls toward its own centre, so that looking into it was not like looking down a
-tunnel but like looking into the place where something is being decided.
+Around him, or perhaps through him, a throat had opened in the air, pale as paper
+and wide as a room, and it went up. It did not run straight back like a corridor.
+It narrowed the way water narrows when it leaves a basin, curving in on itself,
+drawing its own walls toward its own centre, except that the narrow end of it was
+somewhere above and everything in it was climbing.
 
-And its walls were made of keys.
+And the water it was made of was made of keys.
 
-Thousands of them. All of them the same key: a long round shaft, a flat disc at the
-head with three lobes cut clean through it and a small number five stamped near the
-edge, three raised rings at the collar, three square teeth at the bit. They lay end
-to end along a spiral that tightened as it went, each ring closer to the one before
-it, so that the eye was not led along the tunnel but pulled down it. Near him they
-were large and exact, every tooth legible, every collar catching the light. Further
-in they crowded, and overlapped, and stopped being objects at all, and became a kind
-of weather.
+Not lying in the water. Being the water. Every strand of that rising current was a
+line of small keys laid end to end, tip to head, tip to head, strung out loosely
+with gaps between them so that each strand was more air than key, and there were
+not many strands. The whole vortex was sketched rather than built, a few long
+curving lines climbing and turning around a mostly empty middle. All of them the
+same key: a long round shaft, a flat disc at the head with three lobes cut clean
+through it and a small number five stamped near the edge, three raised rings at the
+collar, three square teeth at the bit. Near him one or two were exact enough to
+read. Further off they were only marks.
 
 Not one of them was gold.
 
 This is worth saying slowly, because it is the whole of what happened to him. He
-was falling through a river made of the very thing he was looking for, and it was
-grey. Grey as the pencil the world was drawn in. He passed within a hand's width of
+was being carried up through a river made of the very thing he was looking for, and
+it was grey. Grey as the pencil the world was drawn in. He passed within a hand's width of
 ten thousand keys and did not see a single one, because he did not yet know that a
 key was what he needed. The thing you are looking for is invisible until you know
-you are looking for it. Everyone learns this eventually. He learned it at speed,
-falling.
+you are looking for it. Everyone learns this eventually. He learned it at speed, going
+up.
 
-He went in feet first, the way you go into water when you are not brave enough to
-dive. Then the turning took him and he came round, arms out, and for a moment he was
-looking straight back the way he had come, at the mouth of the throat with the
-ordinary afternoon still visible through it, small and bright and already too far.
-Then he turned again, and came toward us, and the keys went past his face like rain
-going the wrong way.
+And then it took him, and it did not take him down.
 
-He did not fall for long. It only felt long, the way it does.
+He went up. That was the part he had not expected and the part he could never
+afterwards explain to anybody. A whirlpool is supposed to pull you under. This one
+lifted. It closed around him and drew him upward the way water is drawn up a stem,
+and his feet left whatever he had been standing on, and everything he was wearing
+pulled downward while he went the other way.
+
+The turning rolled him onto his side as it carried him, arms out, and for a moment
+he was looking back down the way he had come, at the wide bright mouth of it far
+below, with the ordinary afternoon still visible through it and already too far.
+Then the current turned him again and he rose past us with his face open, and the
+keys streamed by underneath him like rain falling upward.
+
+He did not rise for long. It only felt long, the way it does.
 
 ### Chapter Ten — The House
 
