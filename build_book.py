@@ -220,6 +220,8 @@ p{margin:0 0 20px}
 .pt{font:600 10.5px/1.3 "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--ink);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ptime{font:400 10px/1.45 "IBM Plex Mono",monospace;color:var(--dim);white-space:nowrap}
+.nudge{color:var(--gold);cursor:pointer;padding:1px 5px;border:1px solid var(--rule);
+  border-radius:5px;margin-left:4px;font-weight:600}
 #rem{color:var(--gold)}
 .bar{height:3px;background:var(--rule);cursor:pointer}
 .bar i{display:block;height:100%%;width:0;background:var(--gold)}
@@ -273,7 +275,7 @@ w.now{background:#F0B966;color:#140F0A;box-shadow:0 0 0 2px #F0B966}
     <div class=pmeta>
       <div class=pt id=pt>Audiobook</div>
       <div class=ptime><span id=el>0:00</span> &nbsp;<span id=rem>-0:00</span>&nbsp;
-        <span id=tot>0:00</span></div>
+        <span id=tot>0:00</span> <b class=nudge id=nudge title="tap: nudge the highlight to match what you hear">0ms</b></div>
     </div>
     <label class=tick title="follow the words"><input type=checkbox id=hl><span>ABC</span></label>
     <select class=vsel id=vsel title=voice>
@@ -421,6 +423,22 @@ bar.onclick = e=>{
    speech. And the page moves only when the spoken word LEAVES a comfortable
    band, not on every word, because scrolling per word is the thing that makes
    a reader seasick. */
+let NUDGE = parseFloat(localStorage.getItem('brainbrake.nudge') || '0');
+const nudgeEl = document.getElementById('nudge');
+const showNudge = () => nudgeEl.textContent = (NUDGE > 0 ? '+' : '') +
+  Math.round(NUDGE * 1000) + 'ms';
+showNudge();
+nudgeEl.onclick = e => {
+  e.stopPropagation();
+  /* forwards through the useful range and back to zero. Positive means the
+     mark waits for the sound, which is what a cast or a Bluetooth speaker
+     needs; negative is for a route that somehow runs early. */
+  const steps = [0, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8, -0.2, -0.1];
+  NUDGE = steps[(steps.indexOf(NUDGE) + 1) %% steps.length];
+  localStorage.setItem('brainbrake.nudge', NUDGE);
+  showNudge(); lastWord = -1;
+};
+
 const hl = document.getElementById('hl');
 let follow = localStorage.getItem('brainbrake.follow') === '1';
 hl.checked = follow;
@@ -485,7 +503,12 @@ function follows(){
     if (p) p.classList.add('sung');
   }
   const m = seg.marks;
-  const t = A[cur].currentTime || 0;        /* already in the media timeline */
+  /* currentTime is already in the media's own timeline and is NEVER scaled by
+     playback rate: word-timing.md section 2, and that error is invisible at
+     1.0x which is why it reads as drift. NUDGE is the listener's own output
+     delay, which is theirs and not ours: casting and Bluetooth add anywhere
+     from 0.15 s to a second and no amount of care in this file can know it. */
+  const t = (A[cur].currentTime || 0) - NUDGE;
   let lo = 0, hi = m.length - 1, k = -1;
   while (lo <= hi){                          /* binary, by position */
     const mid = (lo + hi) >> 1;
