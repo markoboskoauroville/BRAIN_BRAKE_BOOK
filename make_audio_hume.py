@@ -31,7 +31,7 @@ cost real bugs:
 the request is soft. 401 and 402 are dead. E0300 is credit exhausted and a free
 account's grant does not reset, so that key is finished for good.
 """
-import os, re, json, base64, urllib.request, urllib.error, threading, queue, time, subprocess
+import os, re, json, hashlib, base64, urllib.request, urllib.error, threading, queue, time, subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, 'audio_hume')
@@ -120,6 +120,23 @@ OVERRIDE = {
 }
 
 
+def key_of(text):
+    """A paragraph's audio is named after ITS OWN TEXT, never its position.
+
+    2.9.2026. Files used to be 0000.mp3, 0001.mp3 and so on. Then chapter nine
+    gained two paragraphs, every index after it shifted, and 42 of 85 files were
+    suddenly sitting under a number that meant different text. Nothing was wrong
+    with the audio; the numbering had moved underneath it. So 42 paragraphs were
+    re-voiced when about six had changed.
+
+    With a content hash, inserting a paragraph renames nothing. Only text that
+    actually changed has to be spoken again, which is what one file per paragraph
+    was supposed to buy in the first place. Old files for edited paragraphs
+    simply stop being referenced and can be swept.
+    """
+    return hashlib.sha256(text.encode()).hexdigest()[:16]
+
+
 def slug(t):
     return re.sub(r'[^a-z0-9]+', '-', t.lower()).strip('-')
 
@@ -202,7 +219,7 @@ def worker(n):
             (ch, i, text), attempt = q.get_nowait()
         except queue.Empty:
             return
-        mp3 = os.path.join(OUT, '%04d.mp3' % i)
+        mp3 = os.path.join(OUT, key_of(text) + '.mp3')
         if os.path.exists(mp3) and os.path.getsize(mp3) > 800:
             q.task_done(); continue
         key, wait = take_key()
