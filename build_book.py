@@ -217,8 +217,10 @@ p{margin:0 0 20px}
 .pb{background:var(--gold);color:#16110D;border:0;border-radius:999px;width:40px;height:40px;
   font-size:15px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
 .pmeta{flex:1;min-width:0}
-.pt{font:600 10.5px/1.3 "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--ink);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chsel{width:100%%;background:none;color:var(--ink);border:0;padding:0;cursor:pointer;
+  font:600 10.5px/1.35 "IBM Plex Mono",monospace;letter-spacing:.06em;
+  text-overflow:ellipsis;-webkit-appearance:none;appearance:none}
+.chsel option{background:var(--panel);color:var(--ink)}
 .ptime{font:400 10px/1.45 "IBM Plex Mono",monospace;color:var(--dim);white-space:nowrap}
 .nudge{color:var(--gold);cursor:pointer;padding:1px 5px;border:1px solid var(--rule);
   border-radius:5px;margin-left:4px;font-weight:600}
@@ -273,11 +275,12 @@ w.now{background:#F0B966;color:#140F0A;box-shadow:0 0 0 2px #F0B966}
   <div class=pin>
     <button class=pb id=pb aria-label=play>&#9654;</button>
     <div class=pmeta>
-      <div class=pt id=pt>Audiobook</div>
+      <select class=chsel id=chsel title="jump to a chapter"></select>
       <div class=ptime><span id=el>0:00</span> &nbsp;<span id=rem>-0:00</span>&nbsp;
         <span id=tot>0:00</span> <b class=nudge id=nudge title="tap: nudge the highlight to match what you hear">0ms</b></div>
     </div>
-    <label class=tick title="follow the words"><input type=checkbox id=hl><span>ABC</span></label>
+    <label class=tick title="scroll the page to what is being read"><input type=checkbox id=pg><span>PAGE</span></label>
+    <label class=tick title="mark the sentence and the word"><input type=checkbox id=hl><span>ABC</span></label>
     <select class=vsel id=vsel title=voice>
       <option value=audio>Beatrice</option>
       <option value=audio_hume>Priya</option>
@@ -439,9 +442,18 @@ nudgeEl.onclick = e => {
   showNudge(); lastWord = -1;
 };
 
+/* TWO SEPARATE THINGS, because they are useful separately.
+   PAGE keeps the page on the paragraph being read and marks nothing. That is
+   what somebody listening with the phone on the table wants: they glance down
+   and the right words are there, with none of the flicker of a moving mark.
+   ABC adds the sentence bed and the word. It implies PAGE, because a mark you
+   cannot see is worth nothing, so ticking ABC turns PAGE on with it. */
 const hl = document.getElementById('hl');
+const pg = document.getElementById('pg');
 let follow = localStorage.getItem('brainbrake.follow') === '1';
+let pageFollow = localStorage.getItem('brainbrake.page') !== '0';
 hl.checked = follow;
+pg.checked = pageFollow || follow;
 document.body.classList.toggle('following', follow);
 let builtFor = -1, lastWord = -1, wordEls = [], sentOf = [], curPara = null;
 
@@ -493,10 +505,26 @@ function clearPara(){
   wordEls = []; builtFor = -1; lastWord = -1; curPara = null;
 }
 
+let lastPara = -1;
 function follows(){
-  if (!follow || !SEG.list.length) return;
+  if (!SEG.list.length) return;
   const i = SEG.i, seg = SEG.list[i];
   if (!seg) return;
+  if (chsel.value !== seg.ch) chsel.value = seg.ch;
+
+  /* PAGE ONLY. Keep the paragraph being read on screen and mark nothing. It
+     moves once per paragraph rather than once per word, so the page is still
+     while a paragraph is being spoken, which is the whole point of it. */
+  if (!follow){
+    if (!pageFollow || i === lastPara) return;
+    lastPara = i;
+    const p = document.querySelector('[data-seg="' + i + '"]');
+    if (!p) return;
+    const r = p.getBoundingClientRect();
+    if (r.top < 70 || r.bottom > innerHeight - 150)
+      window.scrollTo({top: scrollY + r.top - innerHeight * 0.28, behavior: 'smooth'});
+    return;
+  }
   if (builtFor !== i){
     clearPara();
     const p = buildPara(i);
@@ -538,10 +566,44 @@ setInterval(follows, 60);
 
 hl.onchange = () => {
   follow = hl.checked;
+  if (follow){ pageFollow = true; pg.checked = true;
+               localStorage.setItem('brainbrake.page', '1'); }
   localStorage.setItem('brainbrake.follow', follow ? '1' : '0');
   document.body.classList.toggle('following', follow);
-  if (follow){ builtFor = -1; follows(); } else clearPara();
+  if (follow){ builtFor = -1; follows(); } else { clearPara(); lastPara = -1; }
 };
+pg.onchange = () => {
+  pageFollow = pg.checked;
+  localStorage.setItem('brainbrake.page', pageFollow ? '1' : '0');
+  if (!pageFollow && follow){ follow = false; hl.checked = false;
+    localStorage.setItem('brainbrake.follow', '0');
+    document.body.classList.toggle('following', false); clearPara(); }
+  lastPara = -1;
+  if (pageFollow) follows();
+};
+
+/* ---- the chapters ------------------------------------------------------
+   The title in the bar was already saying which chapter you were in, so it
+   became the way to change it rather than adding another control to a bar that
+   is narrow on a phone. Choosing a chapter moves the audio AND the page, since
+   moving one without the other is how a reader loses their place. */
+const chsel = document.getElementById('chsel');
+function fillChapters(){
+  chsel.innerHTML = CH.map((c, n) =>
+    '<option value="' + c.id + '">' + (n + 1) + '. ' + c.title + '</option>').join('');
+}
+function chapterStart(id){
+  for (let i = 0; i < SEG.list.length; i++) if (SEG.list[i].ch === id) return i;
+  return -1;
+}
+chsel.onchange = () => {
+  const i = chapterStart(chsel.value);
+  const el = document.getElementById(chsel.value);
+  if (el) el.scrollIntoView({behavior: 'smooth'});
+  if (i >= 0){ A[cur].pause(); go(i, SEG.playing);
+               if (SEG.playing) A[cur].play().catch(()=>{}); }
+};
+fillChapters();
 
 /* ---- two voices ---------------------------------------------------------
    Beatrice is Speechify and brings EXACT word marks with the synthesis.
