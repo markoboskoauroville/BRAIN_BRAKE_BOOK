@@ -172,7 +172,7 @@ for s in secs:
 words = len(md.split())
 mins = round(words / 200.0)
 
-page = """<!doctype html><html lang=en><head>
+page = r"""<!doctype html><html lang=en><head>
 <meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
 <title>%(title)s — %(subtitle)s</title>
 <link rel=preconnect href="https://fonts.googleapis.com">
@@ -183,7 +183,7 @@ page = """<!doctype html><html lang=en><head>
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);
   font:300 19px/1.75 Newsreader,Georgia,serif;-webkit-text-size-adjust:100%%}
-.wrap{max-width:660px;margin:0 auto;padding:0 22px 120px}
+.wrap{max-width:660px;margin:0 auto;padding:0 22px 150px}
 .masthead{padding:64px 0 26px;text-align:center}
 .eyebrow{font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.30em;color:var(--gold);
   text-transform:uppercase}
@@ -209,35 +209,34 @@ p{margin:0 0 20px}
 .plate figcaption{color:var(--dim);font-size:14px;font-style:italic;margin-top:9px;text-align:center}
 .colophon{color:var(--dim);font-size:15px;margin-top:70px;border-top:1px solid var(--rule);
   padding-top:26px}
-/* the player */
-.player{position:fixed;left:0;right:0;bottom:0;background:rgba(22,17,13,.96);
-  border-top:1px solid var(--rule);backdrop-filter:blur(10px);z-index:9;
-  padding:9px 14px calc(9px + env(safe-area-inset-bottom))}
-.pin{max-width:660px;margin:0 auto;display:flex;align-items:center;gap:12px}
-.pb{background:var(--gold);color:#16110D;border:0;border-radius:999px;width:42px;height:42px;
-  font-size:17px;cursor:pointer;flex:none}
+/* the player: ONE fixed row, fixed height, and nothing nested below it */
+.player{position:fixed;left:0;right:0;bottom:0;background:rgba(18,14,11,.97);
+  border-top:1px solid var(--rule);backdrop-filter:blur(12px);z-index:20}
+.pin{max-width:660px;margin:0 auto;display:flex;align-items:center;gap:10px;
+  padding:8px 14px calc(8px + env(safe-area-inset-bottom))}
+.pb{background:var(--gold);color:#16110D;border:0;border-radius:999px;width:40px;height:40px;
+  font-size:15px;cursor:pointer;flex:none;display:flex;align-items:center;justify-content:center}
 .pmeta{flex:1;min-width:0}
-.pt{font:600 11px/1.35 "IBM Plex Mono",monospace;letter-spacing:.08em;color:var(--ink);
+.pt{font:600 10.5px/1.3 "IBM Plex Mono",monospace;letter-spacing:.06em;color:var(--ink);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ptime{font:400 10.5px/1.5 "IBM Plex Mono",monospace;color:var(--dim)}
-.bar{height:4px;background:var(--rule);border-radius:3px;margin-top:5px;cursor:pointer}
-.bar i{display:block;height:100%%;width:0;background:var(--gold);border-radius:3px}
-.tick{display:flex;align-items:center;gap:6px;flex:none;cursor:pointer;
-  font:600 10px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--dim)}
-.tick input{accent-color:var(--gold);width:17px;height:17px}
+.ptime{font:400 10px/1.45 "IBM Plex Mono",monospace;color:var(--dim);white-space:nowrap}
+#rem{color:var(--gold)}
+.bar{height:3px;background:var(--rule);cursor:pointer}
+.bar i{display:block;height:100%%;width:0;background:var(--gold)}
+.tick{display:flex;align-items:center;gap:5px;flex:none;cursor:pointer;
+  font:600 9.5px/1 "IBM Plex Mono",monospace;letter-spacing:.1em;color:var(--dim)}
+.tick input{accent-color:var(--gold);width:16px;height:16px;margin:0}
 .vsel{flex:none;background:var(--panel);color:var(--ink);border:1px solid var(--rule);
-  border-radius:8px;padding:6px 7px;font:600 10px/1 "IBM Plex Mono",monospace;
-  letter-spacing:.08em}
-.tick span{text-transform:uppercase}
-.prompt{display:none;max-width:660px;margin:10px auto 2px;height:96px;overflow:hidden;
-  border-top:1px solid var(--rule);padding-top:10px}
-.prompt.on{display:block}
-.ptext{font:400 20px/1.5 Newsreader,Georgia,serif;color:var(--dim)}
-.ptext w{transition:color .08s linear}
-.ptext w.said{color:var(--ink)}
-.ptext w.now{color:var(--gold);text-decoration:underline;text-underline-offset:4px}
-mark.live{background:none;color:var(--gold);text-decoration:underline;
-  text-underline-offset:4px;text-decoration-thickness:2px}
+  border-radius:7px;padding:6px 5px;font:600 9.5px/1 "IBM Plex Mono",monospace;max-width:88px}
+/* the page IS the teleprompter. Sentence dim to bright, word in gold. Colour and
+   underline only, never weight: bold changes a word's width and the line
+   reflows as the highlight passes, so the text appears to breathe. */
+.following p{color:#6E655C;transition:color .25s}
+.following p.sung{color:var(--ink)}
+w.said{color:#8E8377}
+w.now{color:var(--gold);text-decoration:underline;text-underline-offset:5px;
+  text-decoration-thickness:2px}
+p.sung s2.now{color:var(--ink)}
 .resume{position:fixed;left:50%%;transform:translateX(-50%%);bottom:80px;background:var(--panel);
   border:1px solid var(--gold);color:var(--ink);border-radius:999px;padding:9px 18px;font-size:14px;
   cursor:pointer;z-index:10;display:none}
@@ -266,20 +265,19 @@ mark.live{background:none;color:var(--gold);text-decoration:underline;
 
 <div class=player id=player>
   <div class=pin>
-    <button class=pb id=pb>&#9654;</button>
+    <button class=pb id=pb aria-label=play>&#9654;</button>
     <div class=pmeta>
       <div class=pt id=pt>Audiobook</div>
-      <div class=ptime><span id=el>0:00</span> &nbsp;·&nbsp; <span id=rem>-0:00</span> left
-        &nbsp;·&nbsp; <span id=tot>0:00</span> total</div>
-      <div class=bar id=bar><i id=fill></i></div>
+      <div class=ptime><span id=el>0:00</span> &nbsp;<span id=rem>-0:00</span>&nbsp;
+        <span id=tot>0:00</span></div>
     </div>
-    <label class=tick title="follow the words"><input type=checkbox id=hl> <span>abc</span></label>
-    <select class=vsel id=vsel title="voice">
+    <label class=tick title="follow the words"><input type=checkbox id=hl><span>ABC</span></label>
+    <select class=vsel id=vsel title=voice>
       <option value=audio>Beatrice</option>
       <option value=audio_hume>Priya</option>
     </select>
   </div>
-  <div class=prompt id=prompt><div class=ptext id=ptext></div></div>
+  <div class=bar id=bar><i id=fill></i></div>
 </div>
 
 <script>
@@ -393,103 +391,118 @@ bar.onclick = e=>{
   prime(); tick();
 };
 
-/* ---- follow the words ---------------------------------------------------
-   MANTRA_MANIFEST/modules/word-timing.md, and none of this is invented.
+/* ---- follow the words, IN THE BOOK ITSELF ------------------------------
+   The first version put a teleprompter panel inside the fixed player, so the
+   book was on the page, a second copy of the same sentence was in the panel,
+   and the panel grew downward off the bottom of a phone. Two copies of the
+   text is not a reading aid, it is chaos. There is no panel now. THE PAGE IS
+   THE TELEPROMPTER: the sentence being spoken lifts out of the dimmed page and
+   the word inside it takes the gold.
 
-   Speechify returns EXACT word marks with the synthesis: start, end, and the
-   character offsets into the text we sent. Measured here on this book: 2,885
-   marks, ZERO inter word gaps and ZERO overlaps, which is the same finding the
-   module records from 18.8.2026. So there is no aligning to do and no
-   cleverness to write. Parse the marks, find the word whose window holds the
-   playhead. §2: when exact marks are available, use them and write nothing.
+   MANTRA_MANIFEST/modules/word-timing.md, and the two traps it names.
 
-   THE TWO TRAPS, both avoided here on purpose.
+   MATCH BY POSITION, NEVER BY TEXT. Every mark carries character offsets into
+   the paragraph and the lookup uses those. This book says "the" hundreds of
+   times; matching by letters lands on the first one every time, throws the
+   highlight to the top of the page on every common word, looks exactly like a
+   timing bug, and no timing tuning touches it.
 
-   MATCH BY POSITION, NEVER BY TEXT. Every mark carries character offsets and
-   the lookup uses them. This book says "the" hundreds of times, and matching
-   by letters would land on the first one every time and throw the highlight to
-   the top of the page on every common word. It looks exactly like a timing bug
-   and no amount of timing tuning touches it.
+   DO NOT SCALE THE PLAYHEAD BY PLAYBACK RATE. currentTime is already in the
+   media's timeline. It is correct at 1.0x, which is why that error reads as
+   vague drift rather than a fault.
 
-   DO NOT SCALE THE PLAYHEAD BY PLAYBACK SPEED. currentTime is already in the
-   media's own timeline. Multiplying by rate again makes the highlight run ahead
-   by that factor, and it is correct at 1.0x, so it reads as vague drift rather
-   than an error.
-
-   DISPLAY, §4. Colour and underline only, never weight: bold changes a word's
-   width so the line reflows as the highlight passes and the text appears to
-   breathe. Underline is free, it sits in descender space the line already
-   reserves. The teleprompter has a FIXED height, so nothing under the thumb
-   moves. The tick is 60 ms, four times faster than speech, so quick words are
-   never skipped and the cost is invisible. */
+   Section 4 on display, followed exactly. Colour and underline, never weight,
+   because bold changes a word's width and the line reflows as the highlight
+   passes. Never scroll horizontally. A 60 ms tick, four times faster than
+   speech. And the page moves only when the spoken word LEAVES a comfortable
+   band, not on every word, because scrolling per word is the thing that makes
+   a reader seasick. */
 const hl = document.getElementById('hl');
-const prompt = document.getElementById('prompt'), ptext = document.getElementById('ptext');
 let follow = localStorage.getItem('brainbrake.follow') === '1';
 hl.checked = follow;
-let wordEls = [], builtFor = -1, lastWord = -1;
+document.body.classList.toggle('following', follow);
+let builtFor = -1, lastWord = -1, wordEls = [], sentOf = [], curPara = null;
 
-function buildWords(i){
+function esc(x){ return x.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+/* tokenise ONE paragraph in place, wrapping each spoken word. Sentences are
+   found from the visible text so the sentence highlight does not depend on the
+   engine agreeing with us about where sentences are. */
+function buildPara(i){
   const seg = SEG.list[i];
-  if (!seg) return;
+  const p = document.querySelector('[data-seg="' + i + '"]');
+  if (!seg || !p) return null;
+  if (!p.dataset.raw) p.dataset.raw = p.textContent;
   const t = seg.text, m = seg.marks;
+  /* sentence boundaries by character offset */
+  const bounds = [];
+  const re = /[.!?]["')\]]?(\s|$)/g; let mm;
+  while ((mm = re.exec(t))) bounds.push(mm.index + mm[0].length);
+  const sentenceAt = c => { let s = 0; for (const b of bounds){ if (c >= b) s++; else break; } return s; };
   let html = '', at = 0;
+  sentOf = [];
   m.forEach((w, k) => {
     html += esc(t.slice(at, w[2])) + '<w data-k="' + k + '">' + esc(t.slice(w[2], w[3])) + '</w>';
+    sentOf.push(sentenceAt(w[2]));
     at = w[3];
   });
   html += esc(t.slice(at));
-  ptext.innerHTML = html;
-  wordEls = [...ptext.querySelectorAll('w')];
-  builtFor = i; lastWord = -1;
+  p.innerHTML = html;
+  wordEls = [...p.querySelectorAll('w')];
+  builtFor = i; lastWord = -1; curPara = p;
+  return p;
 }
-function esc(x){ return x.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function clearPara(){
+  document.querySelectorAll('p[data-raw]').forEach(p => {
+    p.textContent = p.dataset.raw; p.classList.remove('sung');
+  });
+  wordEls = []; builtFor = -1; lastWord = -1; curPara = null;
+}
 
 function follows(){
   if (!follow || !SEG.list.length) return;
   const i = SEG.i, seg = SEG.list[i];
   if (!seg) return;
-  if (builtFor !== i) buildWords(i);
-  const p = A[cur].currentTime || 0;      /* already in the media timeline */
+  if (builtFor !== i){
+    clearPara();
+    const p = buildPara(i);
+    if (p) p.classList.add('sung');
+  }
   const m = seg.marks;
+  const t = A[cur].currentTime || 0;        /* already in the media timeline */
   let lo = 0, hi = m.length - 1, k = -1;
-  while (lo <= hi){                        /* by position, binary, not by text */
+  while (lo <= hi){                          /* binary, by position */
     const mid = (lo + hi) >> 1;
-    if (p < m[mid][0]) hi = mid - 1;
-    else if (p >= m[mid][1]) lo = mid + 1;
+    if (t < m[mid][0]) hi = mid - 1;
+    else if (t >= m[mid][1]) lo = mid + 1;
     else { k = mid; break; }
   }
   if (k < 0) k = Math.min(m.length - 1, Math.max(0, lo - 1));
   if (k === lastWord) return;
   lastWord = k;
+  const sent = sentOf[k];
   wordEls.forEach((el, j) => {
     el.className = j < k ? 'said' : (j === k ? 'now' : '');
+    el.style.color = (sentOf[j] === sent && j > k) ? 'var(--ink)' : '';
   });
-  /* the sentence sits at the top and the page scrolls under it, so the eye
-     never chases the mark down the screen */
   const w = wordEls[k];
-  if (w){
-    const top = w.offsetTop - 4;
-    if (Math.abs(ptext.style.marginTop.replace('px','') * -1 - top) > 2)
-      ptext.style.marginTop = (-top) + 'px';
-  }
-  const para = document.querySelector('[data-seg="' + i + '"]');
-  if (para){
-    const r = para.getBoundingClientRect();
-    if (r.top < 60 || r.bottom > innerHeight - 190)
-      window.scrollTo({top: scrollY + r.top - 110, behavior:'smooth'});
-    document.querySelectorAll('mark.live').forEach(x => x.classList.remove('live'));
-  }
+  if (!w) return;
+  /* move the page only when the word leaves the band between a fifth and a
+     half of the screen. Anything tighter scrolls on every word and the reader
+     feels the page moving rather than the mark. */
+  const r = w.getBoundingClientRect();
+  const top = innerHeight * 0.20, bottom = innerHeight * 0.52;
+  if (r.top < top || r.top > bottom)
+    window.scrollTo({top: scrollY + r.top - innerHeight * 0.30, behavior: 'smooth'});
 }
 setInterval(follows, 60);
 
 hl.onchange = () => {
   follow = hl.checked;
   localStorage.setItem('brainbrake.follow', follow ? '1' : '0');
-  prompt.classList.toggle('on', follow);
-  if (follow){ builtFor = -1; follows(); }
-  else { ptext.innerHTML = ''; ptext.style.marginTop = '0'; }
+  document.body.classList.toggle('following', follow);
+  if (follow){ builtFor = -1; follows(); } else clearPara();
 };
-prompt.classList.toggle('on', follow);
 
 /* ---- two voices ---------------------------------------------------------
    Beatrice is Speechify and brings EXACT word marks with the synthesis.
@@ -510,7 +523,7 @@ function loadVoice(dir, keepAt){
     SEG.list = d.segments; SEG.total = d.total; SEG.dir = dir;
     let run = 0;
     SEG.before = SEG.list.map(s=>{ const b = run; run += s.sec; return b; });
-    builtFor = -1;
+    clearPara();
     const start = Math.min(keepAt !== undefined ? keepAt : 0, SEG.list.length - 1);
     A[0].pause(); A[1].pause(); cur = 0;
     go(start, SEG.playing);
