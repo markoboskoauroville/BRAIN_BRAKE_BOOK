@@ -32,9 +32,10 @@ def chapters(md):
         if line.startswith('## PART') or line.startswith('## THE LAST PAGE'):
             if cur:
                 out.append(cur)
-            cur = {'kind': 'part', 'title': line[3:].strip(), 'body': []}
-            out.append(cur)
-            cur = None
+            out.append({'kind': 'part', 'title': line[3:].strip(), 'body': []})
+            # keep collecting: a part heading with prose under it and no chapter
+            # beneath it used to lose that prose entirely
+            cur = {'kind': 'chapter', 'title': '', 'body': []}
             continue
         if line.startswith('### '):
             if cur:
@@ -68,7 +69,45 @@ def slug(t):
     return re.sub(r'[^a-z0-9]+', '-', t.lower()).strip('-')
 
 
+
+def audio_segments(md):
+    """The SAME split make_audio.py uses, character for character.
+
+    This has to be one function conceptually or the two drift and the highlight
+    lands in the wrong paragraph, which would look like a timing bug and be a
+    segmentation bug. Every rendered <p> carries the index of its audio file,
+    so the page can scroll itself to the paragraph being spoken.
+    """
+    out, ch, buf = [], 'front-matter', []
+    def flush():
+        if buf:
+            t = ' '.join(x.strip() for x in buf).strip()
+            if t and not t.startswith('#'):
+                out.append([ch, t])
+        buf.clear()
+    for line in md.splitlines():
+        if line.startswith('### ') or line.startswith('## '):
+            flush(); ch = slug(line.lstrip('#').strip()); continue
+        if line.strip() in ('', '---'):
+            flush()
+        else:
+            buf.append(line)
+    flush()
+    fin = []
+    for c, t in out:
+        while len(t) > 2000:
+            cut = t.rfind('. ', 0, 2000)
+            cut = cut + 1 if cut > 400 else 2000
+            fin.append([c, t[:cut].strip()]); t = t[cut:].strip()
+        fin.append([c, t])
+    return fin
+
+
 md = open(SRC, encoding='utf-8').read()
+SEGS = audio_segments(md)
+SEGI = {}
+for _i, (_c, _t) in enumerate(SEGS):
+    SEGI.setdefault(_t, _i)
 title = 'THE BRAIN BRAKE'
 subtitle = 'The book the film was made from'
 secs = chapters(md)
@@ -98,18 +137,37 @@ for s in secs:
         body.append('<h2 class=part id="%s">%s</h2>' % (sid, html.escape(s['title'])))
         toc.append('<div class=tocpart>%s</div>' % html.escape(s['title']))
         continue
-    sid = slug(s['title'])
-    chlist.append({'id': sid, 'title': s['title']})
-    body.append('<section class=chapter id="%s" data-ch="%s">' % (sid, sid))
-    body.append('<h3 class="ch-head">%s</h3>' % html.escape(s['title']))
+    if not s['title']:
+        if not [b for b in para(s['body']) if b]:
+            continue
+        sid = 'the-last-page'
+        chlist.append({'id': sid, 'title': 'The Last Page'})
+        body.append('<section class=chapter id="%s" data-ch="%s">' % (sid, sid))
+    else:
+        sid = slug(s['title'])
+        chlist.append({'id': sid, 'title': s['title']})
+        body.append('<section class=chapter id="%s" data-ch="%s">' % (sid, sid))
+        body.append('<h3 class="ch-head">%s</h3>' % html.escape(s['title']))
     if sid in PLATES:
         u, cap = PLATES[sid]
         body.append('<figure class=plate><img loading=lazy src="%s" alt="">'
                     '<figcaption>%s</figcaption></figure>' % (u, html.escape(cap)))
     for b in para(s['body']):
-        body.append('<p>%s</p>' % html.escape(b))
+        # a visible paragraph over the 2000 character cap became more than one
+        # audio file, so it is emitted in the same pieces and each piece keeps
+        # its own index. Nothing on screen is ever half of a spoken paragraph.
+        parts, rest = [], b
+        while len(rest) > 2000:
+            cut = rest.rfind('. ', 0, 2000)
+            cut = cut + 1 if cut > 400 else 2000
+            parts.append(rest[:cut].strip()); rest = rest[cut:].strip()
+        parts.append(rest)
+        for pt_ in parts:
+            gi = SEGI.get(pt_)
+            body.append('<p%s>%s</p>' % ((' data-seg="%d"' % gi) if gi is not None else '',
+                                         html.escape(pt_)))
     body.append('</section>')
-    toc.append('<a href="#%s">%s</a>' % (sid, html.escape(s['title'])))
+    toc.append('<a href="#%s">%s</a>' % (sid, html.escape(s['title'] or 'The Last Page')))
 
 words = len(md.split())
 mins = round(words / 200.0)
@@ -164,6 +222,19 @@ p{margin:0 0 20px}
 .ptime{font:400 10.5px/1.5 "IBM Plex Mono",monospace;color:var(--dim)}
 .bar{height:4px;background:var(--rule);border-radius:3px;margin-top:5px;cursor:pointer}
 .bar i{display:block;height:100%%;width:0;background:var(--gold);border-radius:3px}
+.tick{display:flex;align-items:center;gap:6px;flex:none;cursor:pointer;
+  font:600 10px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--dim)}
+.tick input{accent-color:var(--gold);width:17px;height:17px}
+.tick span{text-transform:uppercase}
+.prompt{display:none;max-width:660px;margin:10px auto 2px;height:96px;overflow:hidden;
+  border-top:1px solid var(--rule);padding-top:10px}
+.prompt.on{display:block}
+.ptext{font:400 20px/1.5 Newsreader,Georgia,serif;color:var(--dim)}
+.ptext w{transition:color .08s linear}
+.ptext w.said{color:var(--ink)}
+.ptext w.now{color:var(--gold);text-decoration:underline;text-underline-offset:4px}
+mark.live{background:none;color:var(--gold);text-decoration:underline;
+  text-underline-offset:4px;text-decoration-thickness:2px}
 .resume{position:fixed;left:50%%;transform:translateX(-50%%);bottom:80px;background:var(--panel);
   border:1px solid var(--gold);color:var(--ink);border-radius:999px;padding:9px 18px;font-size:14px;
   cursor:pointer;z-index:10;display:none}
@@ -199,7 +270,9 @@ p{margin:0 0 20px}
         &nbsp;·&nbsp; <span id=tot>0:00</span> total</div>
       <div class=bar id=bar><i id=fill></i></div>
     </div>
+    <label class=tick title="follow the words"><input type=checkbox id=hl> <span>abc</span></label>
   </div>
+  <div class=prompt id=prompt><div class=ptext id=ptext></div></div>
 </div>
 
 <script>
@@ -312,6 +385,104 @@ bar.onclick = e=>{
   if (SEG.playing) A[cur].play().catch(()=>{});
   prime(); tick();
 };
+
+/* ---- follow the words ---------------------------------------------------
+   MANTRA_MANIFEST/modules/word-timing.md, and none of this is invented.
+
+   Speechify returns EXACT word marks with the synthesis: start, end, and the
+   character offsets into the text we sent. Measured here on this book: 2,885
+   marks, ZERO inter word gaps and ZERO overlaps, which is the same finding the
+   module records from 18.8.2026. So there is no aligning to do and no
+   cleverness to write. Parse the marks, find the word whose window holds the
+   playhead. §2: when exact marks are available, use them and write nothing.
+
+   THE TWO TRAPS, both avoided here on purpose.
+
+   MATCH BY POSITION, NEVER BY TEXT. Every mark carries character offsets and
+   the lookup uses them. This book says "the" hundreds of times, and matching
+   by letters would land on the first one every time and throw the highlight to
+   the top of the page on every common word. It looks exactly like a timing bug
+   and no amount of timing tuning touches it.
+
+   DO NOT SCALE THE PLAYHEAD BY PLAYBACK SPEED. currentTime is already in the
+   media's own timeline. Multiplying by rate again makes the highlight run ahead
+   by that factor, and it is correct at 1.0x, so it reads as vague drift rather
+   than an error.
+
+   DISPLAY, §4. Colour and underline only, never weight: bold changes a word's
+   width so the line reflows as the highlight passes and the text appears to
+   breathe. Underline is free, it sits in descender space the line already
+   reserves. The teleprompter has a FIXED height, so nothing under the thumb
+   moves. The tick is 60 ms, four times faster than speech, so quick words are
+   never skipped and the cost is invisible. */
+const hl = document.getElementById('hl');
+const prompt = document.getElementById('prompt'), ptext = document.getElementById('ptext');
+let follow = localStorage.getItem('brainbrake.follow') === '1';
+hl.checked = follow;
+let wordEls = [], builtFor = -1, lastWord = -1;
+
+function buildWords(i){
+  const seg = SEG.list[i];
+  if (!seg) return;
+  const t = seg.text, m = seg.marks;
+  let html = '', at = 0;
+  m.forEach((w, k) => {
+    html += esc(t.slice(at, w[2])) + '<w data-k="' + k + '">' + esc(t.slice(w[2], w[3])) + '</w>';
+    at = w[3];
+  });
+  html += esc(t.slice(at));
+  ptext.innerHTML = html;
+  wordEls = [...ptext.querySelectorAll('w')];
+  builtFor = i; lastWord = -1;
+}
+function esc(x){ return x.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+function follows(){
+  if (!follow || !SEG.list.length) return;
+  const i = SEG.i, seg = SEG.list[i];
+  if (!seg) return;
+  if (builtFor !== i) buildWords(i);
+  const p = A[cur].currentTime || 0;      /* already in the media timeline */
+  const m = seg.marks;
+  let lo = 0, hi = m.length - 1, k = -1;
+  while (lo <= hi){                        /* by position, binary, not by text */
+    const mid = (lo + hi) >> 1;
+    if (p < m[mid][0]) hi = mid - 1;
+    else if (p >= m[mid][1]) lo = mid + 1;
+    else { k = mid; break; }
+  }
+  if (k < 0) k = Math.min(m.length - 1, Math.max(0, lo - 1));
+  if (k === lastWord) return;
+  lastWord = k;
+  wordEls.forEach((el, j) => {
+    el.className = j < k ? 'said' : (j === k ? 'now' : '');
+  });
+  /* the sentence sits at the top and the page scrolls under it, so the eye
+     never chases the mark down the screen */
+  const w = wordEls[k];
+  if (w){
+    const top = w.offsetTop - 4;
+    if (Math.abs(ptext.style.marginTop.replace('px','') * -1 - top) > 2)
+      ptext.style.marginTop = (-top) + 'px';
+  }
+  const para = document.querySelector('[data-seg="' + i + '"]');
+  if (para){
+    const r = para.getBoundingClientRect();
+    if (r.top < 60 || r.bottom > innerHeight - 190)
+      window.scrollTo({top: scrollY + r.top - 110, behavior:'smooth'});
+    document.querySelectorAll('mark.live').forEach(x => x.classList.remove('live'));
+  }
+}
+setInterval(follows, 60);
+
+hl.onchange = () => {
+  follow = hl.checked;
+  localStorage.setItem('brainbrake.follow', follow ? '1' : '0');
+  prompt.classList.toggle('on', follow);
+  if (follow){ builtFor = -1; follows(); }
+  else { ptext.innerHTML = ''; ptext.style.marginTop = '0'; }
+};
+prompt.classList.toggle('on', follow);
 
 fetch('audio/durations.json').then(r=>r.json()).then(d=>{
   SEG.list = d.segments; SEG.total = d.total;

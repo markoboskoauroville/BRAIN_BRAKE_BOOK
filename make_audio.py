@@ -36,8 +36,8 @@ API = 'https://api.speechify.ai/v1/audio/speech'
 VOICE = 'beatrice_32'
 MODEL = 'simba-3.2'          # correct for a _32 seat, see the trap above
 CAP = 2000                   # hard limit on `input`, from the provider
-WORKERS = 5
-TRIES = 5
+WORKERS = 6
+TRIES = 6
 
 
 def keys():
@@ -90,19 +90,34 @@ def synth(key, text):
     with urllib.request.urlopen(req, timeout=120) as r:
         d = json.load(r)
     audio = base64.b64decode(d['audio_data'])
-    marks = d.get('speech_marks') or {}
-    secs = _dur(marks)
-    return audio, secs
+    marks = _flat(d.get('speech_marks') or {})
+    secs = max((m[1] for m in marks), default=0.0)
+    return audio, secs, marks
 
 
-def _dur(node, best=0.0):
+def _flat(node, out=None):
+    """Speechify's exact word marks, flattened. Chunks nest, a sentence chunk
+    holding word chunks, so this recurses. Kept as [start, end, char_start,
+    char_end] in SECONDS and CHARACTER OFFSETS into the text we sent.
+
+    The character offsets are the whole point and they are why the highlight
+    is matched BY POSITION and never by text. word-timing.md §2: a passage says
+    "the" twenty times, and looking the current word up by its letters lands on
+    the first one every time. It reads exactly like a timing bug and no amount
+    of timing tuning touches it."""
+    if out is None:
+        out = []
     if isinstance(node, dict):
-        e = node.get('end_time')
-        if isinstance(e, (int, float)):
-            best = max(best, e / 1000.0)
+        if node.get('type') == 'word':
+            v = node.get('value') or ''
+            st, en = node.get('start_time'), node.get('end_time')
+            if any(c.isalnum() for c in v) and st is not None and en is not None:
+                out.append([round(st / 1000.0, 3), round(en / 1000.0, 3),
+                            int(node.get('start', 0)), int(node.get('end', 0))])
         for c in (node.get('chunks') or []):
-            best = _dur(c, best)
-    return best
+            _flat(c, out)
+    out.sort(key=lambda m: m[0])
+    return out
 
 
 KEYS = keys()
@@ -124,7 +139,11 @@ def worker(n):
             return
         name = '%04d.mp3' % i
         path = os.path.join(OUT, name)
-        if os.path.exists(path) and os.path.getsize(path) > 800:
+        # A paragraph is finished only when BOTH the audio and its marks exist.
+        # The first version tested the mp3 alone, so a re-run skipped every
+        # paragraph and produced no marks at all while reporting success.
+        if os.path.exists(path) and os.path.getsize(path) > 800 \
+                and os.path.exists(os.path.join(OUT, '%04d.json' % i)):
             q.task_done(); continue
         with lock:
             live = [k for k in KEYS if k not in bad]
@@ -132,8 +151,9 @@ def worker(n):
             failed.append((i, 'no keys left')); q.task_done(); continue
         key = live[(i + attempt * 7 + n) % len(live)]
         try:
-            audio, secs = synth(key, text)
+            audio, secs, marks = synth(key, text)
             open(path, 'wb').write(audio)
+            json.dump(marks, open(os.path.join(OUT, '%04d.json' % i), 'w'))
             with lock:
                 done[i] = {'ch': ch, 'sec': round(secs, 2), 'bytes': len(audio),
                            'words': len(text.split())}
