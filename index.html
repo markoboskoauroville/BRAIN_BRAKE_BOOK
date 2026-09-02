@@ -51,6 +51,9 @@ p{margin:0 0 20px}
 .tick{display:flex;align-items:center;gap:6px;flex:none;cursor:pointer;
   font:600 10px/1 "IBM Plex Mono",monospace;letter-spacing:.12em;color:var(--dim)}
 .tick input{accent-color:var(--gold);width:17px;height:17px}
+.vsel{flex:none;background:var(--panel);color:var(--ink);border:1px solid var(--rule);
+  border-radius:8px;padding:6px 7px;font:600 10px/1 "IBM Plex Mono",monospace;
+  letter-spacing:.08em}
 .tick span{text-transform:uppercase}
 .prompt{display:none;max-width:660px;margin:10px auto 2px;height:96px;overflow:hidden;
   border-top:1px solid var(--rule);padding-top:10px}
@@ -226,6 +229,10 @@ mark.live{background:none;color:var(--gold);text-decoration:underline;
       <div class=bar id=bar><i id=fill></i></div>
     </div>
     <label class=tick title="follow the words"><input type=checkbox id=hl> <span>abc</span></label>
+    <select class=vsel id=vsel title="voice">
+      <option value=audio>Beatrice</option>
+      <option value=audio_hume>Priya</option>
+    </select>
   </div>
   <div class=prompt id=prompt><div class=ptext id=ptext></div></div>
 </div>
@@ -300,7 +307,7 @@ function tick(){
   fill.style.width = T ? (100*e/T)+'%' : '0%';
   pt.textContent = chapterOf(SEG.i);
 }
-function src(i){ return 'audio/' + SEG.list[i].f; }
+function src(i){ return (SEG.dir || 'audio') + '/' + SEG.list[i].f; }
 function prime(){
   const n = SEG.i + 1;
   if (n < SEG.list.length) A[1-cur].src = src(n);   /* fetched during playback */
@@ -439,12 +446,38 @@ hl.onchange = () => {
 };
 prompt.classList.toggle('on', follow);
 
-fetch('audio/durations.json').then(r=>r.json()).then(d=>{
-  SEG.list = d.segments; SEG.total = d.total;
-  let run = 0;
-  SEG.before = SEG.list.map(s=>{ const b = run; run += s.sec; return b; });
-  const start = (saved && saved.seg && saved.seg < SEG.list.length) ? saved.seg : 0;
-  go(start, false);
-}).catch(()=>{ pt.textContent = 'Audiobook not available'; });
+/* ---- two voices ---------------------------------------------------------
+   Beatrice is Speechify and brings EXACT word marks with the synthesis.
+   Priya is Hume and brings none, so hers are estimated by spreading each
+   paragraph across its words in proportion to their length, which is
+   word-timing.md section 3: the naive alternative drops every unmatched word at
+   time zero and pins the highlight to the last word for a whole sentence.
+
+   Switching keeps your place. The paragraph index is the same in both voices
+   because both are cut by the same function, so the listener changes voice and
+   carries on from the same sentence rather than starting the book again. */
+let VOICE = localStorage.getItem('brainbrake.voice') || 'audio';
+const vsel = document.getElementById('vsel');
+vsel.value = VOICE;
+
+function loadVoice(dir, keepAt){
+  return fetch(dir + '/durations.json').then(r=>r.json()).then(d=>{
+    SEG.list = d.segments; SEG.total = d.total; SEG.dir = dir;
+    let run = 0;
+    SEG.before = SEG.list.map(s=>{ const b = run; run += s.sec; return b; });
+    builtFor = -1;
+    const start = Math.min(keepAt !== undefined ? keepAt : 0, SEG.list.length - 1);
+    A[0].pause(); A[1].pause(); cur = 0;
+    go(start, SEG.playing);
+    if (SEG.playing) A[cur].play().catch(()=>{});
+  });
+}
+vsel.onchange = () => {
+  VOICE = vsel.value;
+  localStorage.setItem('brainbrake.voice', VOICE);
+  loadVoice(VOICE, SEG.i);
+};
+loadVoice(VOICE, (saved && saved.seg) || 0)
+  .catch(()=>{ pt.textContent = 'Audiobook not available'; });
 </script>
 </body></html>
