@@ -117,6 +117,15 @@ secs = chapters(md)
 # at the door, one at the end. Four in three thousand words. The book is read,
 # not looked at.
 PLATES = {
+    # Baba, 3.9.2026. The only change the book needed when scene one was redone.
+    # The prose never described the shots, so nothing in it went out of date and
+    # none of the other plates were touched by the rename. But the new scene one
+    # ends its inspection on this frame, and this chapter is the one that asks
+    # where the hundred metres came from, so the film and the book now ask it in
+    # the same place. One line to remove if it is one image too many.
+    'chapter-one-the-mystery': (
+        'https://raw.githubusercontent.com/markoboskoauroville/BRAIN_BRAKE_ORIGINALS/main/BB_C_1/1-15.png',
+        'The same face, seconds after it had nothing left, held under a glass.'),
     'chapter-nine-the-passage': (
         'https://raw.githubusercontent.com/markoboskoauroville/BRAIN_BRAKE_ORIGINALS/main/BB_C_9/9-1-GANESHA-v1.png',
         'A form arriving out of bare paper, which is how everything in this story arrives.'),
